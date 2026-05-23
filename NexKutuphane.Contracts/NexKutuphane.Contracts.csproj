@@ -7,14 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Authors\" />
     <Folder Include="Auth\" />
-    <Folder Include="Categories\" />
     <Folder Include="Dashboard\" />
-    <Folder Include="Languages\" />
     <Folder Include="Loans\" />
     <Folder Include="Members\" />
-    <Folder Include="Publishers\" />
     <Folder Include="Settings\" />
   </ItemGroup>
 

@@ -20,14 +20,10 @@
     <Folder Include="Controls\" />
     <Folder Include="Forms\Admin\" />
     <Folder Include="Forms\Auth\" />
-    <Folder Include="Forms\Books\" />
-    <Folder Include="Forms\Dashboard\" />
     <Folder Include="Forms\Loans\" />
     <Folder Include="Forms\Members\" />
     <Folder Include="Forms\Reports\" />
     <Folder Include="Forms\Settings\" />
-    <Folder Include="Helpers\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
