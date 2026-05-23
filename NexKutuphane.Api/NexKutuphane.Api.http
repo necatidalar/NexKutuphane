@@ -1,0 +1,6 @@
+@NexKutuphane.Api_HostAddress = http://localhost:5262
+
+GET {{NexKutuphane.Api_HostAddress}}/health/
+Accept: application/json
+
+###

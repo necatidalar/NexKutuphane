@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="NexKutuphane.Api/NexKutuphane.Api.csproj" />
+  <Project Path="NexKutuphane.Application/NexKutuphane.Application.csproj" />
+  <Project Path="NexKutuphane.Contracts/NexKutuphane.Contracts.csproj" />
+  <Project Path="NexKutuphane.Desktop/NexKutuphane.Desktop.csproj" />
+  <Project Path="NexKutuphane.Domain/NexKutuphane.Domain.csproj" />
+  <Project Path="NexKutuphane.Infrastructure/NexKutuphane.Infrastructure.csproj" />
+</Solution>
