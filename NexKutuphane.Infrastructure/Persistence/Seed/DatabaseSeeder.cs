@@ -21,6 +21,8 @@ public static class DatabaseSeeder
         await SeedYayinevleriAsync(context);
         await SeedYazarlarAsync(context);
         await SeedKitaplarAsync(context);
+        await SeedUyeTanimVerileriAsync(context);
+        await SeedUyelerAsync(context);
     }
 
     private static async Task SeedRollerAsync(AppDbContext context)
@@ -468,5 +470,215 @@ public static class DatabaseSeeder
         var hashBytes = SHA256.HashData(bytes);
 
         return Convert.ToHexString(hashBytes);
+    }
+
+    private static async Task SeedUyeTanimVerileriAsync(AppDbContext context)
+    {
+        var uyeTurleri = new List<UyeTuru>
+    {
+        new() { UyeTuruAdi = "Öğrenci", UyeTuruKodu = "OGRENCI", Aciklama = "Okul öğrencisi." },
+        new() { UyeTuruAdi = "Öğretmen", UyeTuruKodu = "OGRETMEN", Aciklama = "Okul öğretmeni." },
+        new() { UyeTuruAdi = "Personel", UyeTuruKodu = "PERSONEL", Aciklama = "Okul veya kütüphane personeli." },
+        new() { UyeTuruAdi = "Dış Üye", UyeTuruKodu = "DIS_UYE", Aciklama = "Bağımsız kütüphane üyesi." }
+    };
+
+        foreach (var uyeTuru in uyeTurleri)
+        {
+            if (!await context.UyeTurleri.AnyAsync(x => x.UyeTuruKodu == uyeTuru.UyeTuruKodu))
+            {
+                await context.UyeTurleri.AddAsync(uyeTuru);
+            }
+        }
+
+        var siniflar = new List<Sinif>
+    {
+        new() { SinifAdi = "9", Seviye = 9 },
+        new() { SinifAdi = "10", Seviye = 10 },
+        new() { SinifAdi = "11", Seviye = 11 },
+        new() { SinifAdi = "12", Seviye = 12 }
+    };
+
+        foreach (var sinif in siniflar)
+        {
+            if (!await context.Siniflar.AnyAsync(x => x.SinifAdi == sinif.SinifAdi))
+            {
+                await context.Siniflar.AddAsync(sinif);
+            }
+        }
+
+        var subeler = new List<Sube>
+    {
+        new() { SubeAdi = "A" },
+        new() { SubeAdi = "B" },
+        new() { SubeAdi = "C" },
+        new() { SubeAdi = "D" },
+        new() { SubeAdi = "E" },
+        new() { SubeAdi = "F" },
+        new() { SubeAdi = "G" },
+        new() { SubeAdi = "H" },
+        new() { SubeAdi = "I" },
+        new() { SubeAdi = "J" },
+        new() { SubeAdi = "K" },
+        new() { SubeAdi = "L" },
+        new() { SubeAdi = "M" },
+        new() { SubeAdi = "N" },
+        new() { SubeAdi = "O" },
+        new() { SubeAdi = "P" },
+        new() { SubeAdi = "Q" },
+        new() { SubeAdi = "R" },
+        new() { SubeAdi = "S" },
+        new() { SubeAdi = "T" },
+        new() { SubeAdi = "U" },
+        new() { SubeAdi = "V" },
+        new() { SubeAdi = "W" },
+        new() { SubeAdi = "X" },
+        new() { SubeAdi = "Y" },
+        new() { SubeAdi = "Z" },
+        new() { SubeAdi = "SUBESIZ" },
+
+    };
+
+        foreach (var sube in subeler)
+        {
+            if (!await context.Subeler.AnyAsync(x => x.SubeAdi == sube.SubeAdi))
+            {
+                await context.Subeler.AddAsync(sube);
+            }
+        }
+
+        await context.SaveChangesAsync();
+
+        var bilisim = await GetOrCreateBolumAsync(context, "Bilişim Teknolojileri");
+        var elektrik = await GetOrCreateBolumAsync(context, "Elektrik-Elektronik Teknolojisi");
+        var muhasebe = await GetOrCreateBolumAsync(context, "Muhasebe ve Finansman");
+
+        await GetOrCreateAlanAsync(context, "Yazılım Geliştirme", bilisim.Id);
+        await GetOrCreateAlanAsync(context, "Ağ İşletmenliği", bilisim.Id);
+        await GetOrCreateAlanAsync(context, "Elektrik Tesisatları", elektrik.Id);
+        await GetOrCreateAlanAsync(context, "Bilgisayarlı Muhasebe", muhasebe.Id);
+
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task<Bolum> GetOrCreateBolumAsync(AppDbContext context, string bolumAdi)
+    {
+        var bolum = await context.Bolumler.FirstOrDefaultAsync(x => x.BolumAdi == bolumAdi);
+
+        if (bolum is not null)
+        {
+            return bolum;
+        }
+
+        bolum = new Bolum
+        {
+            BolumAdi = bolumAdi,
+            Aciklama = $"{bolumAdi} bölümü."
+        };
+
+        await context.Bolumler.AddAsync(bolum);
+        await context.SaveChangesAsync();
+
+        return bolum;
+    }
+
+    private static async Task<Alan> GetOrCreateAlanAsync(AppDbContext context, string alanAdi, int bolumId)
+    {
+        var alan = await context.Alanlar.FirstOrDefaultAsync(x => x.AlanAdi == alanAdi && x.BolumId == bolumId);
+
+        if (alan is not null)
+        {
+            return alan;
+        }
+
+        alan = new Alan
+        {
+            AlanAdi = alanAdi,
+            BolumId = bolumId,
+            Aciklama = $"{alanAdi} alanı."
+        };
+
+        await context.Alanlar.AddAsync(alan);
+        await context.SaveChangesAsync();
+
+        return alan;
+    }
+
+    private static async Task SeedUyelerAsync(AppDbContext context)
+    {
+        var ogrenciTuru = await context.UyeTurleri.FirstAsync(x => x.UyeTuruKodu == "OGRENCI");
+        var ogretmenTuru = await context.UyeTurleri.FirstAsync(x => x.UyeTuruKodu == "OGRETMEN");
+
+        var sinif12 = await context.Siniflar.FirstAsync(x => x.SinifAdi == "12");
+        var subeC = await context.Subeler.FirstAsync(x => x.SubeAdi == "C");
+
+        var bilisim = await context.Bolumler.FirstAsync(x => x.BolumAdi == "Bilişim Teknolojileri");
+        var yazilim = await context.Alanlar.FirstAsync(x => x.AlanAdi == "Yazılım Geliştirme");
+
+        var uyeler = new List<Uye>
+    {
+        new()
+        {
+            Ad = "Ahmet",
+            Soyad = "Yılmaz",
+            OkulNo = "1001",
+            Telefon = "05550000001",
+            Eposta = "ahmet.yilmaz@okul.local",
+            Adres = "Samsun",
+            UyeTuruId = ogrenciTuru.Id,
+            SinifId = sinif12.Id,
+            SubeId = subeC.Id,
+            BolumId = bilisim.Id,
+            AlanId = yazilim.Id,
+            VeliAdSoyad = "Mehmet Yılmaz",
+            VeliTelefon = "05551111111",
+            VeliYakinlik = "Baba",
+            Durum = NexKutuphane.Domain.Enums.UyeDurumu.Aktif,
+            Aciklama = "Örnek öğrenci üye."
+        },
+        new()
+        {
+            Ad = "Zeynep",
+            Soyad = "Kaya",
+            OkulNo = "1002",
+            Telefon = "05550000002",
+            Eposta = "zeynep.kaya@okul.local",
+            Adres = "Samsun",
+            UyeTuruId = ogrenciTuru.Id,
+            SinifId = sinif12.Id,
+            SubeId = subeC.Id,
+            BolumId = bilisim.Id,
+            AlanId = yazilim.Id,
+            VeliAdSoyad = "Ayşe Kaya",
+            VeliTelefon = "05552222222",
+            VeliYakinlik = "Anne",
+            Durum = NexKutuphane.Domain.Enums.UyeDurumu.Aktif,
+            Aciklama = "Örnek öğrenci üye."
+        },
+        new()
+        {
+            Ad = "Mehmet",
+            Soyad = "Demir",
+            Telefon = "05550000003",
+            Eposta = "mehmet.demir@okul.local",
+            Adres = "Samsun",
+            UyeTuruId = ogretmenTuru.Id,
+            Durum = NexKutuphane.Domain.Enums.UyeDurumu.Aktif,
+            Aciklama = "Örnek öğretmen üye."
+        }
+    };
+
+        foreach (var uye in uyeler)
+        {
+            var exists = !string.IsNullOrWhiteSpace(uye.OkulNo)
+                ? await context.Uyeler.AnyAsync(x => x.OkulNo == uye.OkulNo)
+                : await context.Uyeler.AnyAsync(x => x.Ad == uye.Ad && x.Soyad == uye.Soyad && x.Eposta == uye.Eposta);
+
+            if (!exists)
+            {
+                await context.Uyeler.AddAsync(uye);
+            }
+        }
+
+        await context.SaveChangesAsync();
     }
 }

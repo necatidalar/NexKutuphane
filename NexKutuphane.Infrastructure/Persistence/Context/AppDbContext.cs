@@ -23,6 +23,12 @@ public class AppDbContext : DbContext
     public DbSet<Kategori> Kategoriler => Set<Kategori>();
     public DbSet<Dil> Diller => Set<Dil>();
 
+    public DbSet<Uye> Uyeler => Set<Uye>();
+    public DbSet<UyeTuru> UyeTurleri => Set<UyeTuru>();
+    public DbSet<Sinif> Siniflar => Set<Sinif>();
+    public DbSet<Sube> Subeler => Set<Sube>();
+    public DbSet<Bolum> Bolumler => Set<Bolum>();
+    public DbSet<Alan> Alanlar => Set<Alan>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -53,6 +59,59 @@ public class AppDbContext : DbContext
             .WithMany(x => x.AltKategoriler)
             .HasForeignKey(x => x.UstKategoriId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Uye>()
+    .HasOne(x => x.UyeTuru)
+    .WithMany(x => x.Uyeler)
+    .HasForeignKey(x => x.UyeTuruId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Uye>()
+            .HasOne(x => x.Sinif)
+            .WithMany(x => x.Uyeler)
+            .HasForeignKey(x => x.SinifId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Uye>()
+            .HasOne(x => x.Sube)
+            .WithMany(x => x.Uyeler)
+            .HasForeignKey(x => x.SubeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Uye>()
+            .HasOne(x => x.Bolum)
+            .WithMany(x => x.Uyeler)
+            .HasForeignKey(x => x.BolumId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Uye>()
+            .HasOne(x => x.Alan)
+            .WithMany(x => x.Uyeler)
+            .HasForeignKey(x => x.AlanId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Alan>()
+            .HasOne(x => x.Bolum)
+            .WithMany(x => x.Alanlar)
+            .HasForeignKey(x => x.BolumId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Uye>()
+            .HasIndex(x => x.OkulNo)
+            .IsUnique()
+            .HasFilter("[OkulNo] IS NOT NULL");
+
+        modelBuilder.Entity<UyeTuru>()
+            .HasIndex(x => x.UyeTuruKodu)
+            .IsUnique();
+
+        modelBuilder.Entity<Sinif>()
+            .HasIndex(x => x.SinifAdi)
+            .IsUnique();
+
+        modelBuilder.Entity<Sube>()
+            .HasIndex(x => x.SubeAdi)
+            .IsUnique();
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
