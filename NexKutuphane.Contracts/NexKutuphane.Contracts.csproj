@@ -10,7 +10,6 @@
     <Folder Include="Auth\" />
     <Folder Include="Dashboard\" />
     <Folder Include="Loans\" />
-    <Folder Include="Members\" />
     <Folder Include="Settings\" />
   </ItemGroup>
 
