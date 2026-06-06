@@ -1,5 +1,6 @@
 ﻿using NexKutuphane.Desktop.Forms.Books;
 using NexKutuphane.Desktop.Forms.Dashboard;
+using NexKutuphane.Desktop.Forms.Members;
 
 namespace NexKutuphane.Desktop.Forms;
 
@@ -71,7 +72,7 @@ public partial class FrmMain : Form
     {
         SetActiveButton(btnMembers);
         lblPageTitle.Text = "Üye İşlemleri";
-        ShowComingSoon("Üye İşlemleri");
+        OpenChildForm(new FrmMembers());
     }
 
     private void btnLoans_Click(object sender, EventArgs e)

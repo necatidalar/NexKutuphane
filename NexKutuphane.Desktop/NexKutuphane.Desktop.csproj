@@ -21,7 +21,6 @@
     <Folder Include="Forms\Admin\" />
     <Folder Include="Forms\Auth\" />
     <Folder Include="Forms\Loans\" />
-    <Folder Include="Forms\Members\" />
     <Folder Include="Forms\Reports\" />
     <Folder Include="Forms\Settings\" />
   </ItemGroup>
