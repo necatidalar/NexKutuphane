@@ -127,16 +127,19 @@ public partial class FrmMembers : Form
         await LoadMembersAsync();
     }
 
-    private void btnAdd_Click(object sender, EventArgs e)
+    private async void btnAdd_Click(object sender, EventArgs e)
     {
-        MessageBox.Show(
-            "Üye ekleme ekranı sonraki adımda eklenecek.",
-            "NexKütüphane",
-            MessageBoxButtons.OK,
-            MessageBoxIcon.Information);
+        using var form = new FrmMemberAddEdit();
+
+        var result = form.ShowDialog();
+
+        if (result == DialogResult.OK)
+        {
+            await LoadMembersAsync();
+        }
     }
 
-    private void btnEdit_Click(object sender, EventArgs e)
+    private async void btnEdit_Click(object sender, EventArgs e)
     {
         var selectedMember = GetSelectedMember();
 
@@ -151,11 +154,14 @@ public partial class FrmMembers : Form
             return;
         }
 
-        MessageBox.Show(
-            $"Seçilen üye: {selectedMember.AdSoyad}\nDüzenleme ekranı sonraki adımda eklenecek.",
-            "NexKütüphane",
-            MessageBoxButtons.OK,
-            MessageBoxIcon.Information);
+        using var form = new FrmMemberAddEdit(selectedMember.Id);
+
+        var result = form.ShowDialog();
+
+        if (result == DialogResult.OK)
+        {
+            await LoadMembersAsync();
+        }
     }
 
     private async void btnDelete_Click(object sender, EventArgs e)
@@ -227,7 +233,7 @@ public partial class FrmMembers : Form
         return null;
     }
 
-    private void dgvMembers_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+    private async void dgvMembers_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
     {
         if (e.RowIndex < 0)
         {
@@ -241,10 +247,13 @@ public partial class FrmMembers : Form
             return;
         }
 
-        MessageBox.Show(
-            $"Üye Detayı\n\nAd Soyad: {selectedMember.AdSoyad}\nOkul No: {selectedMember.OkulNo}\nÜye Türü: {selectedMember.UyeTuruAdi}\nSınıf/Şube: {selectedMember.SinifAdi}/{selectedMember.SubeAdi}\nBölüm: {selectedMember.BolumAdi}\nAlan: {selectedMember.AlanAdi}\nDurum: {selectedMember.Durum}",
-            "Üye Detayı",
-            MessageBoxButtons.OK,
-            MessageBoxIcon.Information);
+        using var form = new FrmMemberAddEdit(selectedMember.Id);
+
+        var result = form.ShowDialog();
+
+        if (result == DialogResult.OK)
+        {
+            await LoadMembersAsync();
+        }
     }
 }

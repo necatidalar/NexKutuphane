@@ -29,6 +29,14 @@ public class AppDbContext : DbContext
     public DbSet<Sube> Subeler => Set<Sube>();
     public DbSet<Bolum> Bolumler => Set<Bolum>();
     public DbSet<Alan> Alanlar => Set<Alan>();
+
+    public DbSet<YerlesimBolumu> YerlesimBolumleri => Set<YerlesimBolumu>();
+    public DbSet<Dolap> Dolaplar => Set<Dolap>();
+    public DbSet<Raf> Raflar => Set<Raf>();
+    public DbSet<KitapKonum> KitapKonumlari => Set<KitapKonum>();
+    public DbSet<KitapKopya> KitapKopyalari => Set<KitapKopya>();
+    public DbSet<OduncIslem> OduncIslemleri => Set<OduncIslem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -61,10 +69,10 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Uye>()
-    .HasOne(x => x.UyeTuru)
-    .WithMany(x => x.Uyeler)
-    .HasForeignKey(x => x.UyeTuruId)
-    .OnDelete(DeleteBehavior.Restrict);
+            .HasOne(x => x.UyeTuru)
+            .WithMany(x => x.Uyeler)
+            .HasForeignKey(x => x.UyeTuruId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Uye>()
             .HasOne(x => x.Sinif)
@@ -112,6 +120,107 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Sube>()
             .HasIndex(x => x.SubeAdi)
             .IsUnique();
+
+        modelBuilder.Entity<Dolap>()
+            .HasOne(x => x.YerlesimBolumu)
+            .WithMany(x => x.Dolaplar)
+            .HasForeignKey(x => x.YerlesimBolumuId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Raf>()
+            .HasOne(x => x.Dolap)
+            .WithMany(x => x.Raflar)
+            .HasForeignKey(x => x.DolapId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<KitapKonum>()
+            .HasOne(x => x.Kitap)
+            .WithMany(x => x.KitapKonumlari)
+            .HasForeignKey(x => x.KitapId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<KitapKonum>()
+            .HasOne(x => x.Raf)
+            .WithMany(x => x.KitapKonumlari)
+            .HasForeignKey(x => x.RafId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<YerlesimBolumu>()
+            .HasIndex(x => x.BolumKodu)
+            .IsUnique()
+            .HasFilter("[BolumKodu] IS NOT NULL");
+
+        modelBuilder.Entity<Dolap>()
+            .HasIndex(x => x.DolapKodu)
+            .IsUnique()
+            .HasFilter("[DolapKodu] IS NOT NULL");
+
+        modelBuilder.Entity<Raf>()
+            .HasIndex(x => x.RafKodu)
+            .IsUnique()
+            .HasFilter("[RafKodu] IS NOT NULL");
+
+        modelBuilder.Entity<KitapKonum>()
+            .HasIndex(x => new { x.KitapId, x.RafId })
+            .IsUnique();
+
+        modelBuilder.Entity<KitapKopya>()
+            .HasOne(x => x.Kitap)
+            .WithMany(x => x.KitapKopyalari)
+            .HasForeignKey(x => x.KitapId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<KitapKopya>()
+            .HasOne(x => x.Raf)
+            .WithMany(x => x.KitapKopyalari)
+            .HasForeignKey(x => x.RafId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<KitapKopya>()
+            .HasIndex(x => x.Barkod)
+            .IsUnique();
+
+        modelBuilder.Entity<KitapKopya>()
+            .HasIndex(x => x.DemirbasNo)
+            .IsUnique()
+            .HasFilter("[DemirbasNo] IS NOT NULL");
+
+        modelBuilder.Entity<OduncIslem>()
+    .HasOne(x => x.Uye)
+    .WithMany(x => x.OduncIslemleri)
+    .HasForeignKey(x => x.UyeId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<OduncIslem>()
+            .HasOne(x => x.KitapKopya)
+            .WithMany(x => x.OduncIslemleri)
+            .HasForeignKey(x => x.KitapKopyaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<OduncIslem>()
+            .HasOne(x => x.OduncVerenKullanici)
+            .WithMany()
+            .HasForeignKey(x => x.OduncVerenKullaniciId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<OduncIslem>()
+            .HasOne(x => x.IadeAlanKullanici)
+            .WithMany()
+            .HasForeignKey(x => x.IadeAlanKullaniciId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<OduncIslem>()
+            .HasIndex(x => x.KitapKopyaId);
+
+        modelBuilder.Entity<OduncIslem>()
+            .HasIndex(x => x.UyeId);
+
+        modelBuilder.Entity<OduncIslem>()
+            .HasIndex(x => x.Durum);
+
+        modelBuilder.Entity<OduncIslem>()
+            .Property(x => x.CezaTutari)
+            .HasPrecision(18, 2);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }

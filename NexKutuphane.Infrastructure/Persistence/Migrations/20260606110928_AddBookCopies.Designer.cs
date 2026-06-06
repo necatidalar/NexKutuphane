@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NexKutuphane.Infrastructure.Persistence.Context;
 
@@ -11,9 +12,11 @@ using NexKutuphane.Infrastructure.Persistence.Context;
 namespace NexKutuphane.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260606110928_AddBookCopies")]
+    partial class AddBookCopies
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -437,72 +440,6 @@ namespace NexKutuphane.Infrastructure.Persistence.Migrations
                     b.HasIndex("RolId");
 
                     b.ToTable("KullaniciRolleri");
-                });
-
-            modelBuilder.Entity("NexKutuphane.Domain.Entities.OduncIslem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Aciklama")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("AktifMi")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal?>("CezaTutari")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Durum")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("GuncellemeTarihi")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("IadeAlanKullaniciId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("IadeTarihi")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("KitapKopyaId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("OduncTarihi")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("OduncVerenKullaniciId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("OlusturmaTarihi")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("SonTeslimTarihi")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("SureUzatmaSayisi")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UyeId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Durum");
-
-                    b.HasIndex("IadeAlanKullaniciId");
-
-                    b.HasIndex("KitapKopyaId");
-
-                    b.HasIndex("OduncVerenKullaniciId");
-
-                    b.HasIndex("UyeId");
-
-                    b.ToTable("OduncIslemleri");
                 });
 
             modelBuilder.Entity("NexKutuphane.Domain.Entities.Raf", b =>
@@ -1084,39 +1021,6 @@ namespace NexKutuphane.Infrastructure.Persistence.Migrations
                     b.Navigation("Rol");
                 });
 
-            modelBuilder.Entity("NexKutuphane.Domain.Entities.OduncIslem", b =>
-                {
-                    b.HasOne("NexKutuphane.Domain.Entities.Kullanici", "IadeAlanKullanici")
-                        .WithMany()
-                        .HasForeignKey("IadeAlanKullaniciId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("NexKutuphane.Domain.Entities.KitapKopya", "KitapKopya")
-                        .WithMany("OduncIslemleri")
-                        .HasForeignKey("KitapKopyaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("NexKutuphane.Domain.Entities.Kullanici", "OduncVerenKullanici")
-                        .WithMany()
-                        .HasForeignKey("OduncVerenKullaniciId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("NexKutuphane.Domain.Entities.Uye", "Uye")
-                        .WithMany("OduncIslemleri")
-                        .HasForeignKey("UyeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("IadeAlanKullanici");
-
-                    b.Navigation("KitapKopya");
-
-                    b.Navigation("OduncVerenKullanici");
-
-                    b.Navigation("Uye");
-                });
-
             modelBuilder.Entity("NexKutuphane.Domain.Entities.Raf", b =>
                 {
                     b.HasOne("NexKutuphane.Domain.Entities.Dolap", "Dolap")
@@ -1225,11 +1129,6 @@ namespace NexKutuphane.Infrastructure.Persistence.Migrations
                     b.Navigation("KitapYazarlari");
                 });
 
-            modelBuilder.Entity("NexKutuphane.Domain.Entities.KitapKopya", b =>
-                {
-                    b.Navigation("OduncIslemleri");
-                });
-
             modelBuilder.Entity("NexKutuphane.Domain.Entities.Kullanici", b =>
                 {
                     b.Navigation("KullaniciRolleri");
@@ -1257,11 +1156,6 @@ namespace NexKutuphane.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("NexKutuphane.Domain.Entities.Sube", b =>
                 {
                     b.Navigation("Uyeler");
-                });
-
-            modelBuilder.Entity("NexKutuphane.Domain.Entities.Uye", b =>
-                {
-                    b.Navigation("OduncIslemleri");
                 });
 
             modelBuilder.Entity("NexKutuphane.Domain.Entities.UyeTuru", b =>

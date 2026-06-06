@@ -53,5 +53,7 @@ public class Uye : BaseEntity
 
     public string? Aciklama { get; set; }
 
+    public ICollection<OduncIslem> OduncIslemleri { get; set; } = new List<OduncIslem>();
+
     public string AdSoyad => $"{Ad} {Soyad}";
 }

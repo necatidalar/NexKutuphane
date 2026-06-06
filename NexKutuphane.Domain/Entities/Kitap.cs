@@ -46,4 +46,6 @@ public class Kitap : BaseEntity
     public bool CeviriMi { get; set; }
 
     public ICollection<KitapYazar> KitapYazarlari { get; set; } = new List<KitapYazar>();
+    public ICollection<KitapKonum> KitapKonumlari { get; set; } = new List<KitapKonum>();
+    public ICollection<KitapKopya> KitapKopyalari { get; set; } = new List<KitapKopya>();
 }

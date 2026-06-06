@@ -15,7 +15,6 @@ public static class DatabaseSeeder
         await SeedYetkilerAsync(context);
         await SeedAdminKullaniciAsync(context);
         await SeedAdminYetkileriAsync(context);
-
         await SeedDillerAsync(context);
         await SeedKategorilerAsync(context);
         await SeedYayinevleriAsync(context);
@@ -23,6 +22,10 @@ public static class DatabaseSeeder
         await SeedKitaplarAsync(context);
         await SeedUyeTanimVerileriAsync(context);
         await SeedUyelerAsync(context);
+        await SeedYerlesimVerileriAsync(context);
+        await SeedKitapKonumlariAsync(context);
+        await SeedKitapKopyalariAsync(context);
+        await SeedOduncIslemleriAsync(context);
     }
 
     private static async Task SeedRollerAsync(AppDbContext context)
@@ -676,6 +679,354 @@ public static class DatabaseSeeder
             if (!exists)
             {
                 await context.Uyeler.AddAsync(uye);
+            }
+        }
+
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedYerlesimVerileriAsync(AppDbContext context)
+    {
+        var edebiyat = await GetOrCreateYerlesimBolumuAsync(
+            context,
+            "Edebiyat Bölümü",
+            "EDEBIYAT",
+            "Roman, hikaye ve edebi eserlerin bulunduğu bölüm.");
+
+        var bilim = await GetOrCreateYerlesimBolumuAsync(
+            context,
+            "Bilim ve Teknoloji Bölümü",
+            "BILIM_TEKNOLOJI",
+            "Bilim, teknoloji ve bilişim kitaplarının bulunduğu bölüm.");
+
+        var tarih = await GetOrCreateYerlesimBolumuAsync(
+            context,
+            "Tarih Bölümü",
+            "TARIH",
+            "Tarih ve sosyal bilimler kitaplarının bulunduğu bölüm.");
+
+        var edebiyatDolap1 = await GetOrCreateDolapAsync(
+            context,
+            "1. Dolap",
+            "EDE-D1",
+            edebiyat.Id,
+            "Edebiyat bölümü birinci dolap.");
+
+        var edebiyatDolap2 = await GetOrCreateDolapAsync(
+            context,
+            "2. Dolap",
+            "EDE-D2",
+            edebiyat.Id,
+            "Edebiyat bölümü ikinci dolap.");
+
+        var bilimDolap1 = await GetOrCreateDolapAsync(
+            context,
+            "1. Dolap",
+            "BIL-D1",
+            bilim.Id,
+            "Bilim ve teknoloji bölümü birinci dolap.");
+
+        var tarihDolap1 = await GetOrCreateDolapAsync(
+            context,
+            "1. Dolap",
+            "TAR-D1",
+            tarih.Id,
+            "Tarih bölümü birinci dolap.");
+
+        await GetOrCreateRafAsync(context, "1. Raf", "EDE-D1-R1", 1, edebiyatDolap1.Id);
+        await GetOrCreateRafAsync(context, "2. Raf", "EDE-D1-R2", 2, edebiyatDolap1.Id);
+        await GetOrCreateRafAsync(context, "3. Raf", "EDE-D2-R3", 3, edebiyatDolap2.Id);
+
+        await GetOrCreateRafAsync(context, "1. Raf", "BIL-D1-R1", 1, bilimDolap1.Id);
+        await GetOrCreateRafAsync(context, "2. Raf", "BIL-D1-R2", 2, bilimDolap1.Id);
+
+        await GetOrCreateRafAsync(context, "1. Raf", "TAR-D1-R1", 1, tarihDolap1.Id);
+
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task<YerlesimBolumu> GetOrCreateYerlesimBolumuAsync(
+        AppDbContext context,
+        string bolumAdi,
+        string bolumKodu,
+        string aciklama)
+    {
+        var bolum = await context.YerlesimBolumleri
+            .FirstOrDefaultAsync(x => x.BolumKodu == bolumKodu);
+
+        if (bolum is not null)
+        {
+            return bolum;
+        }
+
+        bolum = new YerlesimBolumu
+        {
+            BolumAdi = bolumAdi,
+            BolumKodu = bolumKodu,
+            Aciklama = aciklama
+        };
+
+        await context.YerlesimBolumleri.AddAsync(bolum);
+        await context.SaveChangesAsync();
+
+        return bolum;
+    }
+
+    private static async Task<Dolap> GetOrCreateDolapAsync(
+        AppDbContext context,
+        string dolapAdi,
+        string dolapKodu,
+        int yerlesimBolumuId,
+        string aciklama)
+    {
+        var dolap = await context.Dolaplar
+            .FirstOrDefaultAsync(x => x.DolapKodu == dolapKodu);
+
+        if (dolap is not null)
+        {
+            return dolap;
+        }
+
+        dolap = new Dolap
+        {
+            DolapAdi = dolapAdi,
+            DolapKodu = dolapKodu,
+            YerlesimBolumuId = yerlesimBolumuId,
+            Aciklama = aciklama
+        };
+
+        await context.Dolaplar.AddAsync(dolap);
+        await context.SaveChangesAsync();
+
+        return dolap;
+    }
+
+    private static async Task<Raf> GetOrCreateRafAsync(
+        AppDbContext context,
+        string rafAdi,
+        string rafKodu,
+        int siraNo,
+        int dolapId)
+    {
+        var raf = await context.Raflar
+            .FirstOrDefaultAsync(x => x.RafKodu == rafKodu);
+
+        if (raf is not null)
+        {
+            return raf;
+        }
+
+        raf = new Raf
+        {
+            RafAdi = rafAdi,
+            RafKodu = rafKodu,
+            SiraNo = siraNo,
+            DolapId = dolapId
+        };
+
+        await context.Raflar.AddAsync(raf);
+        await context.SaveChangesAsync();
+
+        return raf;
+    }
+
+    private static async Task SeedKitapKonumlariAsync(AppDbContext context)
+    {
+        var kitaplar = await context.Kitaplar.ToListAsync();
+
+        if (!kitaplar.Any())
+        {
+            return;
+        }
+
+        var nutuk = kitaplar.FirstOrDefault(x => x.KitapAdi == "Nutuk");
+        var kurkMantoluMadonna = kitaplar.FirstOrDefault(x => x.KitapAdi == "Kürk Mantolu Madonna");
+        var inceMemed = kitaplar.FirstOrDefault(x => x.KitapAdi == "İnce Memed");
+        var kitap1984 = kitaplar.FirstOrDefault(x => x.KitapAdi == "1984");
+        var denizler = kitaplar.FirstOrDefault(x => x.KitapAdi == "Denizler Altında Yirmi Bin Fersah");
+
+        var tarihRaf = await context.Raflar.FirstOrDefaultAsync(x => x.RafKodu == "TAR-D1-R1");
+        var edebiyatRaf1 = await context.Raflar.FirstOrDefaultAsync(x => x.RafKodu == "EDE-D1-R1");
+        var edebiyatRaf2 = await context.Raflar.FirstOrDefaultAsync(x => x.RafKodu == "EDE-D1-R2");
+        var bilimRaf = await context.Raflar.FirstOrDefaultAsync(x => x.RafKodu == "BIL-D1-R1");
+
+        if (nutuk is not null && tarihRaf is not null)
+        {
+            await AddKitapKonumIfNotExistsAsync(context, nutuk.Id, tarihRaf.Id, "TAR-D1-R1");
+        }
+
+        if (kurkMantoluMadonna is not null && edebiyatRaf1 is not null)
+        {
+            await AddKitapKonumIfNotExistsAsync(context, kurkMantoluMadonna.Id, edebiyatRaf1.Id, "EDE-D1-R1");
+        }
+
+        if (inceMemed is not null && edebiyatRaf2 is not null)
+        {
+            await AddKitapKonumIfNotExistsAsync(context, inceMemed.Id, edebiyatRaf2.Id, "EDE-D1-R2");
+        }
+
+        if (kitap1984 is not null && edebiyatRaf2 is not null)
+        {
+            await AddKitapKonumIfNotExistsAsync(context, kitap1984.Id, edebiyatRaf2.Id, "EDE-D1-R2");
+        }
+
+        if (denizler is not null && bilimRaf is not null)
+        {
+            await AddKitapKonumIfNotExistsAsync(context, denizler.Id, bilimRaf.Id, "BIL-D1-R1");
+        }
+
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task AddKitapKonumIfNotExistsAsync(
+        AppDbContext context,
+        int kitapId,
+        int rafId,
+        string konumKodu)
+    {
+        var exists = await context.KitapKonumlari
+            .AnyAsync(x => x.KitapId == kitapId && x.RafId == rafId);
+
+        if (exists)
+        {
+            return;
+        }
+
+        await context.KitapKonumlari.AddAsync(new KitapKonum
+        {
+            KitapId = kitapId,
+            RafId = rafId,
+            KonumKodu = konumKodu,
+            Aciklama = "Başlangıç örnek konum kaydı."
+        });
+    }
+
+    private static async Task SeedKitapKopyalariAsync(AppDbContext context)
+    {
+        var kitaplar = await context.Kitaplar
+            .Include(x => x.KitapKonumlari)
+            .ToListAsync();
+
+        foreach (var kitap in kitaplar)
+        {
+            var mevcutKopyaSayisi = await context.KitapKopyalari
+                .CountAsync(x => x.KitapId == kitap.Id);
+
+            if (mevcutKopyaSayisi >= kitap.StokAdedi)
+            {
+                continue;
+            }
+
+            var rafId = await context.KitapKonumlari
+                .Where(x => x.KitapId == kitap.Id && x.AktifMi)
+                .Select(x => (int?)x.RafId)
+                .FirstOrDefaultAsync();
+
+            for (int i = mevcutKopyaSayisi + 1; i <= kitap.StokAdedi; i++)
+            {
+                var barkod = $"BK-{kitap.Id:D4}-{i:D3}";
+                var demirbasNo = $"DMR-{kitap.Id:D4}-{i:D3}";
+
+                var exists = await context.KitapKopyalari
+                    .AnyAsync(x => x.Barkod == barkod);
+
+                if (exists)
+                {
+                    continue;
+                }
+
+                await context.KitapKopyalari.AddAsync(new KitapKopya
+                {
+                    KitapId = kitap.Id,
+                    Barkod = barkod,
+                    DemirbasNo = demirbasNo,
+                    Durum = NexKutuphane.Domain.Enums.KitapKopyaDurumu.Musait,
+                    RafId = rafId,
+                    Aciklama = "Başlangıç örnek kitap kopyası.",
+                    AktifMi = true,
+                    OlusturmaTarihi = DateTime.Now
+                });
+            }
+        }
+
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedOduncIslemleriAsync(AppDbContext context)
+    {
+        var admin = await context.Kullanicilar
+            .FirstOrDefaultAsync(x => x.KullaniciAdi == "admin");
+
+        var ahmet = await context.Uyeler
+            .FirstOrDefaultAsync(x => x.OkulNo == "1001");
+
+        var zeynep = await context.Uyeler
+            .FirstOrDefaultAsync(x => x.OkulNo == "1002");
+
+        var kitap1984Kopya = await context.KitapKopyalari
+            .Include(x => x.Kitap)
+            .FirstOrDefaultAsync(x =>
+                x.Kitap.KitapAdi == "1984" &&
+                x.Durum == NexKutuphane.Domain.Enums.KitapKopyaDurumu.Musait);
+
+        var nutukKopya = await context.KitapKopyalari
+            .Include(x => x.Kitap)
+            .FirstOrDefaultAsync(x =>
+                x.Kitap.KitapAdi == "Nutuk" &&
+                x.Durum == NexKutuphane.Domain.Enums.KitapKopyaDurumu.Musait);
+
+        if (ahmet is not null && kitap1984Kopya is not null)
+        {
+            var exists = await context.OduncIslemleri
+                .AnyAsync(x =>
+                    x.UyeId == ahmet.Id &&
+                    x.KitapKopyaId == kitap1984Kopya.Id &&
+                    x.Durum == NexKutuphane.Domain.Enums.OduncDurumu.Oduncte);
+
+            if (!exists)
+            {
+                await context.OduncIslemleri.AddAsync(new OduncIslem
+                {
+                    UyeId = ahmet.Id,
+                    KitapKopyaId = kitap1984Kopya.Id,
+                    OduncTarihi = DateTime.Now.AddDays(-2),
+                    SonTeslimTarihi = DateTime.Now.AddDays(12),
+                    Durum = NexKutuphane.Domain.Enums.OduncDurumu.Oduncte,
+                    OduncVerenKullaniciId = admin?.Id,
+                    Aciklama = "Başlangıç örnek ödünç kaydı.",
+                    AktifMi = true,
+                    OlusturmaTarihi = DateTime.Now
+                });
+
+                kitap1984Kopya.Durum = NexKutuphane.Domain.Enums.KitapKopyaDurumu.Oduncte;
+            }
+        }
+
+        if (zeynep is not null && nutukKopya is not null)
+        {
+            var exists = await context.OduncIslemleri
+                .AnyAsync(x =>
+                    x.UyeId == zeynep.Id &&
+                    x.KitapKopyaId == nutukKopya.Id &&
+                    x.Durum == NexKutuphane.Domain.Enums.OduncDurumu.Gecikti);
+
+            if (!exists)
+            {
+                await context.OduncIslemleri.AddAsync(new OduncIslem
+                {
+                    UyeId = zeynep.Id,
+                    KitapKopyaId = nutukKopya.Id,
+                    OduncTarihi = DateTime.Now.AddDays(-20),
+                    SonTeslimTarihi = DateTime.Now.AddDays(-6),
+                    Durum = NexKutuphane.Domain.Enums.OduncDurumu.Gecikti,
+                    OduncVerenKullaniciId = admin?.Id,
+                    CezaTutari = 0,
+                    Aciklama = "Başlangıç örnek gecikmiş ödünç kaydı.",
+                    AktifMi = true,
+                    OlusturmaTarihi = DateTime.Now
+                });
+
+                nutukKopya.Durum = NexKutuphane.Domain.Enums.KitapKopyaDurumu.Gecikti;
             }
         }
 
